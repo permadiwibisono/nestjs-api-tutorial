@@ -107,6 +107,17 @@ describe('App (e2e)', () => {
           .expectStatus(400)
           .expectJsonLike({ statusCode: 400, error: 'Bad Request' });
       });
+      it('should throw if email not found', () => {
+        return pactum
+          .spec()
+          .post('/auth/signin')
+          .withBody({
+            email: 'foo@bar.com',
+            password: body.password,
+          })
+          .expectStatus(422)
+          .expectJson({ email: ['Invalid credentials'] });
+      });
       it('should signin', () => {
         return pactum
           .spec()
