@@ -10,9 +10,16 @@ export class PrismaService extends PrismaClient {
         db: { url: config.get('DATABASE_URL') },
       },
       log:
-        config.get('APP_ENV') !== 'production'
+        config.get('APP_ENV') === 'local'
           ? ['query', 'info', 'warn', 'error']
           : ['error'],
     });
+  }
+
+  clean() {
+    return this.$transaction([
+      this.bookmark.deleteMany(),
+      this.user.deleteMany(),
+    ]);
   }
 }
