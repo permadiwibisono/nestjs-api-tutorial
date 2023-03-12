@@ -1,9 +1,11 @@
 import { Test } from '@nestjs/testing';
-import { INestApplication, ValidationPipe } from '@nestjs/common';
+import { INestApplication } from '@nestjs/common';
 import * as pactum from 'pactum';
 
 import { AppModule } from '../src/app.module';
+import { ValidationPipe } from '../src/pipe';
 import { PrismaService } from '../src/prisma/prisma.service';
+
 import { AuthDto } from '../src/auth/dto';
 import { UpdateUserDto } from '../src/user/dto';
 
@@ -43,8 +45,8 @@ describe('App (e2e)', () => {
           .withBody({
             password: body.password,
           })
-          .expectStatus(400)
-          .expectJsonLike({ statusCode: 400, error: 'Bad Request' });
+          .expectStatus(422)
+          .expectJsonLike({ statusCode: 422, message: 'Unprocessable Entity' });
       });
       it('should throw if password empty', () => {
         return pactum
@@ -53,15 +55,15 @@ describe('App (e2e)', () => {
           .withBody({
             email: body.email,
           })
-          .expectStatus(400)
-          .expectJsonLike({ statusCode: 400, error: 'Bad Request' });
+          .expectStatus(422)
+          .expectJsonLike({ statusCode: 422, message: 'Unprocessable Entity' });
       });
       it('should throw if no body provided', () => {
         return pactum
           .spec()
           .post('/auth/signup')
-          .expectStatus(400)
-          .expectJsonLike({ statusCode: 400, error: 'Bad Request' });
+          .expectStatus(422)
+          .expectJsonLike({ statusCode: 422, message: 'Unprocessable Entity' });
       });
       it('should signup', () => {
         return pactum
@@ -76,7 +78,7 @@ describe('App (e2e)', () => {
           .post('/auth/signup')
           .withBody(body)
           .expectStatus(422)
-          .expectJson({ email: ['The email is already taken'] });
+          .expectBodyContains('The email is already taken');
       });
     });
     describe('SignIn', () => {
@@ -87,8 +89,8 @@ describe('App (e2e)', () => {
           .withBody({
             password: body.password,
           })
-          .expectStatus(400)
-          .expectJsonLike({ statusCode: 400, error: 'Bad Request' });
+          .expectStatus(422)
+          .expectJsonLike({ statusCode: 422, message: 'Unprocessable Entity' });
       });
       it('should throw if password empty', () => {
         return pactum
@@ -97,15 +99,15 @@ describe('App (e2e)', () => {
           .withBody({
             email: body.email,
           })
-          .expectStatus(400)
-          .expectJsonLike({ statusCode: 400, error: 'Bad Request' });
+          .expectStatus(422)
+          .expectJsonLike({ statusCode: 422, message: 'Unprocessable Entity' });
       });
       it('should throw if no body provided', () => {
         return pactum
           .spec()
           .post('/auth/signin')
-          .expectStatus(400)
-          .expectJsonLike({ statusCode: 400, error: 'Bad Request' });
+          .expectStatus(422)
+          .expectJsonLike({ statusCode: 422, message: 'Unprocessable Entity' });
       });
       it('should throw if email not found', () => {
         return pactum
@@ -116,7 +118,7 @@ describe('App (e2e)', () => {
             password: body.password,
           })
           .expectStatus(422)
-          .expectJson({ email: ['Invalid credentials'] });
+          .expectBodyContains('Invalid credentials');
       });
       it('should signin', () => {
         return pactum
@@ -148,8 +150,8 @@ describe('App (e2e)', () => {
           .spec()
           .put('/users/me')
           .withHeaders({ Authorization: 'Bearer $S{accessToken}' })
-          .expectStatus(400)
-          .expectJsonLike({ statusCode: 400, error: 'Bad Request' });
+          .expectStatus(422)
+          .expectJsonLike({ statusCode: 422, message: 'Unprocessable Entity' });
       });
       it('should update user', () => {
         const body: UpdateUserDto = {
