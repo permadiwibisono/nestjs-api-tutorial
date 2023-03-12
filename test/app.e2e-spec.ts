@@ -8,6 +8,7 @@ import { PrismaService } from '../src/prisma/prisma.service';
 
 import { AuthDto } from '../src/auth/dto';
 import { UpdateUserDto } from '../src/user/dto';
+import { BookmarkDto } from '../src/bookmark/dto';
 
 describe('App (e2e)', () => {
   let app: INestApplication;
@@ -170,17 +171,98 @@ describe('App (e2e)', () => {
     });
   });
   describe('Bookmark', () => {
-    describe('Get bookmarks', () => {
-      it.todo('should pass');
+    describe('Get empty bookmarks', () => {
+      it('should get my bookmarks is empty', () => {
+        return pactum
+          .spec()
+          .get('/bookmarks')
+          .withHeaders({ Authorization: 'Bearer $S{accessToken}' })
+          .expectStatus(200)
+          .expectBody([]);
+      });
+    });
+    describe('Create bookmark', () => {
+      const dto: BookmarkDto = {
+        title: 'First Bookmark',
+        description: 'My first bookmark',
+        link: 'https://google.com',
+      };
+      it('should throw if empty body', () => {
+        return pactum
+          .spec()
+          .post('/bookmarks')
+          .withHeaders({ Authorization: 'Bearer $S{accessToken}' })
+          .expectStatus(422)
+          .expectJsonLike({ statusCode: 422, message: 'Unprocessable Entity' });
+      });
+      it('should create a bookmark', () => {
+        return pactum
+          .spec()
+          .post('/bookmarks')
+          .withHeaders({ Authorization: 'Bearer $S{accessToken}' })
+          .withBody(dto)
+          .expectStatus(201)
+          .stores('bookmarkId', 'id');
+      });
+    });
+    describe('Get my bookmarks', () => {
+      it('should get my bookmarks', () => {
+        return pactum
+          .spec()
+          .get('/bookmarks')
+          .withHeaders({ Authorization: 'Bearer $S{accessToken}' })
+          .expectStatus(200)
+          .expectJsonLength(1);
+      });
     });
     describe('Get bookmark by id', () => {
-      it.todo('should pass');
+      it('should get my bookmark by id', () => {
+        return pactum
+          .spec()
+          .get('/bookmarks/{id}')
+          .withPathParams('id', '$S{bookmarkId}')
+          .withHeaders({ Authorization: 'Bearer $S{accessToken}' })
+          .expectStatus(200)
+          .expectBodyContains('$S{bookmarkId}');
+      });
     });
     describe('Edit bookmark by id', () => {
-      it.todo('should pass');
+      const dto: BookmarkDto = {
+        title: 'First Bookmark Edited',
+        description: 'My first bookmark',
+        link: 'https://google.com',
+      };
+      it('should throw if empty body', () => {
+        return pactum
+          .spec()
+          .put('/bookmarks/{id}')
+          .withPathParams('id', '$S{bookmarkId}')
+          .withHeaders({ Authorization: 'Bearer $S{accessToken}' })
+          .expectStatus(422)
+          .expectJsonLike({ statusCode: 422, message: 'Unprocessable Entity' });
+      });
+      it('should update bookmark by id', () => {
+        return pactum
+          .spec()
+          .put('/bookmarks/{id}')
+          .withPathParams('id', '$S{bookmarkId}')
+          .withHeaders({ Authorization: 'Bearer $S{accessToken}' })
+          .withBody(dto)
+          .expectStatus(200)
+          .expectBodyContains('$S{bookmarkId}')
+          .expectBodyContains(dto.title);
+      });
     });
-    describe('Delet bookmark by id', () => {
-      it.todo('should pass');
+    describe('Delete bookmark by id', () => {
+      it('should delete bookmark', () => {
+        return pactum
+          .spec()
+          .delete('/bookmarks/{id}')
+          .withPathParams('id', '$S{bookmarkId}')
+          .withHeaders({ Authorization: 'Bearer $S{accessToken}' })
+          .expectStatus(204)
+          .expectBody('');
+      });
     });
   });
 });
