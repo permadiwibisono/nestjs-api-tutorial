@@ -204,15 +204,14 @@ describe('App (e2e)', () => {
           .expectStatus(201)
           .stores('bookmarkId', 'id');
       });
-    });
-    describe('Get my bookmarks', () => {
-      it('should get my bookmarks', () => {
+      it('should visible my bookmark after created', () => {
         return pactum
           .spec()
           .get('/bookmarks')
           .withHeaders({ Authorization: 'Bearer $S{accessToken}' })
           .expectStatus(200)
-          .expectJsonLength(1);
+          .expectJsonLength(1)
+          .expectBodyContains('$S{bookmarkId}');
       });
     });
     describe('Get bookmark by id', () => {
@@ -262,6 +261,14 @@ describe('App (e2e)', () => {
           .withHeaders({ Authorization: 'Bearer $S{accessToken}' })
           .expectStatus(204)
           .expectBody('');
+      });
+      it('should not visible bookmark after deleted', () => {
+        return pactum
+          .spec()
+          .get('/bookmarks')
+          .withHeaders({ Authorization: 'Bearer $S{accessToken}' })
+          .expectStatus(200)
+          .expectBody([]);
       });
     });
   });
